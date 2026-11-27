@@ -1,0 +1,7 @@
+RegisterCommand(FrieseBanking.Command, function() TriggerServerEvent('friese-banking:server:open') end)
+RegisterNetEvent('friese-banking:client:show', function(data) SetNuiFocus(true,true); SendNUIMessage({action='open',data=data}) end)
+RegisterNUICallback('close', function(_,cb) SetNuiFocus(false,false); cb(true) end)
+RegisterNUICallback('deposit', function(d,cb) TriggerServerEvent('friese-banking:server:deposit',d.amount); cb(true) end)
+RegisterNUICallback('withdraw', function(d,cb) TriggerServerEvent('friese-banking:server:withdraw',d.amount); cb(true) end)
+RegisterNUICallback('transfer', function(d,cb) TriggerServerEvent('friese-banking:server:transfer',d.target,d.amount); cb(true) end)
+RegisterKeyMapping('bank','Open Friese Bank','keyboard','F7')

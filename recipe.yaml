@@ -1,0 +1,171 @@
+$engine: 3
+$onesync: on
+
+name: Friese-Core
+version: 1.0.0
+author: FrieseMexicanoNL
+description: Complete Friese-Core FiveM framework from the public Friese-scripts GitHub repository.
+
+variables:
+  dbHost: localhost
+  dbPort: 3306
+  dbUsername: root
+  dbPassword: ""
+  dbName: friese_core
+
+tasks:
+  # Download the exact public repository and main branch.
+  - action: download_github
+    src: FrieseMexicanoNL/Friese-scripts
+    ref: main
+    dest: ./tmp/friese-scripts
+
+  # Create the resource categories and move the repository folders into place.
+  - action: ensure_dir
+    path: ./resources
+  - action: move_path
+    src: ./tmp/friese-scripts/[core]
+    dest: ./resources/[core]
+  - action: move_path
+    src: ./tmp/friese-scripts/[addons]
+    dest: ./resources/[addons]
+  - action: move_path
+    src: ./tmp/friese-scripts/[addons-twee]
+    dest: ./resources/[addons-twee]
+  - action: move_path
+    src: ./tmp/friese-scripts/[onderwereldjobs]
+    dest: ./resources/[onderwereldjobs]
+  - action: move_path
+    src: ./tmp/friese-scripts/[overheidjobs]
+    dest: ./resources/[overheidjobs]
+  - action: move_path
+    src: ./tmp/friese-scripts/[publicjobs]
+    dest: ./resources/[publicjobs]
+  - action: move_path
+    src: ./tmp/friese-scripts/[standalone]
+    dest: ./resources/[standalone]
+
+  # Official CFX default resources. The default chat is removed to avoid
+  # competing with Friese-Chat.
+  - action: download_github
+    src: citizenfx/cfx-server-data
+    ref: master
+    subpath: resources
+    dest: ./resources/[cfx-default]
+  - action: remove_path
+    path: ./resources/[cfx-default]/[gameplay]/chat
+
+  # oxmysql is required by the Friese resources.
+  - action: download_file
+    url: https://github.com/overextended/oxmysql/releases/latest/download/oxmysql.zip
+    path: ./tmp/oxmysql.zip
+  - action: unzip
+    src: ./tmp/oxmysql.zip
+    dest: ./resources/[standalone]
+
+  # Import the single SQL file from this repository into the selected database.
+  - action: connect_database
+  - action: query_database
+    file: ./tmp/friese-scripts/sql/fries-scripts.sql
+
+  # Generate the server configuration. txAdmin replaces the template variables.
+  - action: write_file
+    file: ./server.cfg
+    data: |
+      # ============================================================
+      # Friese-Core - txAdmin generated server.cfg
+      # ============================================================
+      {{serverEndpoints}}
+      sv_maxclients {{maxClients}}
+      sv_licenseKey "{{svLicense}}"
+      sv_hostname "{{serverName}} | Friese-Core"
+      sets sv_projectName "Friese-Core"
+      sets sv_projectDesc "Friese-Core Roleplay Framework"
+      sets locale "nl-NL"
+      onesync on
+      set mysql_connection_string "{{dbConnectionString}}"
+      setr friese:locale "nl"
+      setr friese:framework "friese-core"
+
+      # CFX defaults / server base
+      ensure mapmanager
+      ensure spawnmanager
+      ensure sessionmanager
+      ensure hardcap
+      ensure baseevents
+      ensure rconlog
+
+      # Database dependency
+      ensure oxmysql
+
+      # Friese core stack
+      ensure friese-core
+      ensure friese-notify
+      ensure friese-inventory
+      ensure friese-banking
+      ensure friese-integrations
+
+      # Standalone systems
+      ensure friese-logs
+      ensure friese-appearance
+      ensure friese-hud
+      ensure friese-multicharacter
+
+      # Addons
+      ensure friese-chat
+      ensure friese-admin
+      ensure friese-dispatch
+      ensure friese-documents
+      ensure friese-meos
+      ensure friese-phone
+
+      # Addons - second group
+      ensure friese-business
+      ensure friese-clothing
+      ensure friese-crafting
+      ensure friese-dealership
+      ensure friese-garage
+      ensure friese-hospital
+      ensure friese-housing
+      ensure friese-impound
+      ensure friese-keys
+      ensure friese-shops
+      ensure friese-storage
+
+      # Government jobs
+      ensure friese-ambulance
+      ensure friese-mechanic
+      ensure friese-police
+
+      # Public jobs
+      ensure friese-jobs
+      ensure Friese-Construction
+      ensure Friese-Delivery
+      ensure Friese-Diving
+      ensure Friese-Farming
+      ensure Friese-Fishing
+      ensure Friese-Garbage
+      ensure Friese-Hunting
+      ensure Friese-Lumberjack
+      ensure Friese-Mining
+      ensure Friese-Postal
+      ensure Friese-Recycling
+      ensure Friese-Trucker
+
+      # Underground jobs
+      ensure friese-crime
+      ensure friese-drugs
+      ensure friese-gangs
+
+      # Security defaults
+      sv_endpointprivacy true
+      sv_scriptHookAllowed 0
+
+  # Replace variables in the generated config using txAdmin context.
+  - action: replace_string
+    mode: all_vars
+    file: ./server.cfg
+
+  # Clean up temporary downloads after successful installation.
+  - action: remove_path
+    path: ./tmp

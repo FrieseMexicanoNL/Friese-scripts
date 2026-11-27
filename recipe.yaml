@@ -6,13 +6,6 @@ version: 1.0.0
 author: FrieseMexicanoNL
 description: Complete Friese-Core FiveM framework from the public Friese-scripts GitHub repository.
 
-variables:
-  dbHost: localhost
-  dbPort: 3306
-  dbUsername: root
-  dbPassword: ""
-  dbName: friese_core
-
 tasks:
   # Download the exact public repository and main branch.
   - action: download_github
@@ -160,11 +153,6 @@ tasks:
       # Security defaults
       sv_endpointprivacy true
       sv_scriptHookAllowed 0
-
-  # Replace variables in the generated config using txAdmin context.
-  - action: replace_string
-    mode: all_vars
-    file: ./server.cfg
 
   # Clean up temporary downloads after successful installation.
   - action: remove_path

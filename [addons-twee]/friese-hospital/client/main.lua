@@ -1,0 +1,11 @@
+RegisterNetEvent('friese-hospital:client:checkIn',function(duration)
+ local ped=PlayerPedId(); FreezeEntityPosition(ped,true); TaskStartScenarioInPlace(ped,'WORLD_HUMAN_CLIPBOARD',0,true)
+ TriggerEvent('friese-notify:client:notify','Je wordt ingecheckt bij het ziekenhuis...','info')
+ Wait(tonumber(duration) or 15000); ClearPedTasks(ped); FreezeEntityPosition(ped,false); SetEntityHealth(ped,GetEntityMaxHealth(ped)); TriggerEvent('friese-notify:client:notify','Je behandeling is afgerond.','success')
+end)
+RegisterCommand('ziekenhuis',function() TriggerServerEvent('friese-hospital:server:checkIn') end)
+RegisterCommand('medischdossier',function(_,args) local target=tonumber(args[1]); if target then TriggerServerEvent('friese-hospital:server:getRecords',target) end end)
+RegisterCommand('medischenotitie',function(_,args) local target=tonumber(args[1]); if not target then return end; table.remove(args,1); TriggerServerEvent('friese-hospital:server:addRecord',target,table.concat(args,' ')) end)
+RegisterNetEvent('friese-hospital:client:records',function(target,rows)
+ print(('--- Medisch dossier speler %s ---'):format(target)); for _,r in ipairs(rows) do print(('%s | %s | %s'):format(r.created_at or '',r.medic_citizenid or '',r.treatment or '')) end
+end)

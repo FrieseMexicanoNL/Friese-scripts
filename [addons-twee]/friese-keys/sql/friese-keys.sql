@@ -1,0 +1,2 @@
+-- Friese-Core v1.4.0
+CREATE TABLE IF NOT EXISTS friese_keys (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, kind VARCHAR(16) NOT NULL, access_key VARCHAR(32) NOT NULL, citizenid VARCHAR(64) NOT NULL, granted_by VARCHAR(64) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(id), UNIQUE KEY unique_access(kind,access_key,citizenid));

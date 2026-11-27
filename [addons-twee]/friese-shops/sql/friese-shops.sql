@@ -1,0 +1,2 @@
+-- Friese-Core v1.4.0
+-- No additional tables required by this module.
